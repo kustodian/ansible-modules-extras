@@ -164,9 +164,9 @@ def main():
 
     try:
         if module.check_mode:
-            if state == "absent":
+            if state == "present":
                 changed = not ext_exists(cursor, ext)
-            elif state == "present":
+            elif state == "absent":
                 changed = ext_exists(cursor, ext)
             module.exit_json(changed=changed,ext=ext)
 
@@ -175,6 +175,8 @@ def main():
 
         elif state == "present":
             changed = ext_create(cursor, ext)
+    except SystemExit, e:
+        raise
     except NotSupportedError, e:
         module.fail_json(msg=str(e))
     except Exception, e:
