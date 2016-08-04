@@ -31,7 +31,7 @@ description:
 options:
   backup:
     description:
-      - Create a backup of /etc/sysconfig/iptables file before overwriting it.
+      - Create a backup of the iptables state file before overwriting it.
     required: false
     choices: ["yes", "no"]
     default: "no"
@@ -78,10 +78,8 @@ options:
     default: 40
 notes:
   - Requires C(iptables) package.
+  - "Depending on the distribution, iptables rules are saved in different locations, so that they can be loaded on boot. Red Hat distributions (RHEL, CentOS, etc): C(/etc/sysconfig/iptables) and C(/etc/sysconfig/ip6tables); Debian distributions (Debian, Ubuntu, etc): C(/etc/iptables/rules.v4) and C(/etc/iptables/rules.v6) (needs C(iptables-persistent) package); other distributions: C(/etc/sysconfig/iptables) and C(/etc/sysconfig/ip6tables)."
   - This module saves state in C(/etc/ansible-iptables) directory, so don't modify this directory!
-  - Supported distributions are CentOS 5, 6 and 7, but any distribution which loads iptables rules on boot from C(/etc/sysconfig/iptables) should work.
-  - IPv6 iptables (ip6tables) on CentOS 5 isn't supported, since it has a very old version (1.3.x) of iptables.
-  - Supported distributions are Debian/Ubuntu, etc..,. For Debian based distributions, the iptables rules will be saved at /etc/iptables/rules.v4 and /etc/iptables/rules.v6
 author:
   - "Strahinja Kustudic (@kustodian)"
   - "Damir Markovic (@damirda)"
@@ -117,6 +115,12 @@ EXAMPLES = '''
     state=absent
     ipversion=6
     name=allow_tcp_443
+
+# Define rules with a custom chain
+- iptables_raw: >
+    name=custom1_rules
+    rules='-N CUSTOM1
+           -A CUSTOM1 -s 192.168.0.0/24 -j ACCEPT'
 
 # Reset all IPv4 iptables rules in all tables and allow all traffic
 - iptables_raw:
