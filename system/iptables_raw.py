@@ -81,6 +81,7 @@ notes:
   - This module saves state in C(/etc/ansible-iptables) directory, so don't modify this directory!
   - Supported distributions are CentOS 5, 6 and 7, but any distribution which loads iptables rules on boot from C(/etc/sysconfig/iptables) should work.
   - IPv6 iptables (ip6tables) on CentOS 5 isn't supported, since it has a very old version (1.3.x) of iptables.
+  - Supported distributions are Debian/Ubuntu, etc..,. For Debian based distributions, the iptables rules will be saved at /etc/iptables/rules.v4 and /etc/iptables/rules.v6
 author:
   - "Strahinja Kustudic (@kustodian)"
   - "Damir Markovic (@damirda)"
@@ -272,14 +273,25 @@ class Iptables:
         else:
             return []
 
+    #If /etc/debian_version exist, this means this is a debian based OS (Ubuntu, Mint, etc...)
+    def _is_debian(self):
+        return os.path.isfile('/etc/debian_version')
+
     # Get the iptables system save path.
-    # Currently only supports RHEL/CentOS '/etc/sysconfig/' location.
+    # Supports RHEL/CentOS '/etc/sysconfig/' location.
+    # Supports Debian/Ubuntu/Mint,  '/etc/iptables/' location.
     def _get_system_save_path(self, ipversion):
         # distro detection, path setting should be added
         if ipversion == '4':
-            return '/etc/sysconfig/iptables'
+            if self._is_debian():
+                return '/etc/iptables/rules.v4'
+            else:
+                return '/etc/sysconfig/iptables'
         else:
-            return '/etc/sysconfig/ip6tables'
+            if self._is_debian():
+                return '/etc/iptables/rules.v6'
+            else:
+                return '/etc/sysconfig/ip6tables'
 
     # Return path to json state file.
     def _get_state_save_path(self, ipversion):
